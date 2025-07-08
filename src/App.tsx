@@ -24,6 +24,7 @@ function App() {
   const [background, setBackground] = useState<string | null>(() => {
     return localStorage.getItem('pomodoro-background');
   });
+  const [pomodoroCount, setPomodoroCount] = useState(0);
 
   React.useEffect(() => {
     setSecondsLeft(durations[mode]);
@@ -39,6 +40,8 @@ function App() {
         if (prev <= 1) {
           setIsRunning(false);
           clearInterval(timerRef.current!);
+          // Auto-advance to next mode
+          handleAutoAdvance();
           return 0;
         }
         return prev - 1;
@@ -46,6 +49,25 @@ function App() {
     }, 1000);
     return () => clearInterval(timerRef.current!);
   }, [isRunning]);
+
+  const handleAutoAdvance = () => {
+    if (mode === 'pomodoro') {
+      setPomodoroCount(prev => prev + 1);
+      // After 4 pomodoros, take a long break
+      if (pomodoroCount >= 3) {
+        setMode('longBreak');
+        setPomodoroCount(0); // Reset count
+      } else {
+        setMode('shortBreak');
+      }
+    } else if (mode === 'shortBreak' || mode === 'longBreak') {
+      setMode('pomodoro');
+    }
+    // Auto-start the next timer
+    setTimeout(() => {
+      setIsRunning(true);
+    }, 1000); // 1 second delay to show the mode change
+  };
 
   const handleStart = () => setIsRunning(true);
   const handlePause = () => setIsRunning(false);
@@ -57,6 +79,10 @@ function App() {
   const handleModeChange = (newMode: Mode) => {
     setMode(newMode);
     setIsRunning(false);
+    // Reset pomodoro count when manually changing modes
+    if (newMode === 'pomodoro') {
+      setPomodoroCount(0);
+    }
   };
 
   const handleBackgroundChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,65 +103,67 @@ function App() {
       className="App"
       style={background ? { backgroundImage: `url(${background})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
     >
-      <h1>Pomodoro Timer</h1>
-      <div className="mode-buttons">
-        <button onClick={() => handleModeChange('pomodoro')} className={mode === 'pomodoro' ? 'active' : ''}>Pomodoro</button>
-        <button onClick={() => handleModeChange('shortBreak')} className={mode === 'shortBreak' ? 'active' : ''}>Short Break</button>
-        <button onClick={() => handleModeChange('longBreak')} className={mode === 'longBreak' ? 'active' : ''}>Long Break</button>
-      </div>
-      <div className="timer-display">{formatTime(secondsLeft)}</div>
-      <div className="timer-controls">
-        {!isRunning ? (
-          <button onClick={handleStart}>Start</button>
-        ) : (
-          <button onClick={handlePause}>Pause</button>
-        )}
-        <button onClick={handleReset}>Reset</button>
-      </div>
-      <div className="settings">
-        <h2>Timer Settings</h2>
-        <label>
-          Pomodoro (minutes):
-          <input
-            type="number"
-            min={1}
-            value={durations.pomodoro / 60}
-            onChange={e => setDurations(d => ({ ...d, pomodoro: Number(e.target.value) * 60 }))}
-          />
-        </label>
-        <label>
-          Short Break (minutes):
-          <input
-            type="number"
-            min={1}
-            value={durations.shortBreak / 60}
-            onChange={e => setDurations(d => ({ ...d, shortBreak: Number(e.target.value) * 60 }))}
-          />
-        </label>
-        <label>
-          Long Break (minutes):
-          <input
-            type="number"
-            min={1}
-            value={durations.longBreak / 60}
-            onChange={e => setDurations(d => ({ ...d, longBreak: Number(e.target.value) * 60 }))}
-          />
-        </label>
-      </div>
-      <div className="background-upload" style={{ marginTop: '2rem' }}>
-        <h2>Customize Background</h2>
-        <input type="file" accept="image/*" onChange={handleBackgroundChange} />
-        {background && (
-          <button 
-            onClick={() => {
-              setBackground(null);
-              localStorage.removeItem('pomodoro-background');
-            }}
-            style={{ marginLeft: '10px' }}
-          >
-            Clear Background
-          </button>
-        )}
+      <div className="app-container">
+        <h1>Pomodoro Timer</h1>
+        <div className="mode-buttons">
+          <button onClick={() => handleModeChange('pomodoro')} className={mode === 'pomodoro' ? 'active' : ''}>Pomodoro</button>
+          <button onClick={() => handleModeChange('shortBreak')} className={mode === 'shortBreak' ? 'active' : ''}>Short Break</button>
+          <button onClick={() => handleModeChange('longBreak')} className={mode === 'longBreak' ? 'active' : ''}>Long Break</button>
+        </div>
+        <div className="timer-display">{formatTime(secondsLeft)}</div>
+        <div className="timer-controls">
+          {!isRunning ? (
+            <button onClick={handleStart}>Start</button>
+          ) : (
+            <button onClick={handlePause}>Pause</button>
+          )}
+          <button onClick={handleReset}>Reset</button>
+        </div>
+        <div className="settings">
+          <h2>Timer Settings</h2>
+          <label>
+            Pomodoro (minutes):
+            <input
+              type="number"
+              min={1}
+              value={durations.pomodoro / 60}
+              onChange={e => setDurations(d => ({ ...d, pomodoro: Number(e.target.value) * 60 }))}
+            />
+          </label>
+          <label>
+            Short Break (minutes):
+            <input
+              type="number"
+              min={1}
+              value={durations.shortBreak / 60}
+              onChange={e => setDurations(d => ({ ...d, shortBreak: Number(e.target.value) * 60 }))}
+            />
+          </label>
+          <label>
+            Long Break (minutes):
+            <input
+              type="number"
+              min={1}
+              value={durations.longBreak / 60}
+              onChange={e => setDurations(d => ({ ...d, longBreak: Number(e.target.value) * 60 }))}
+            />
+          </label>
+        </div>
+        <div className="background-upload" style={{ marginTop: '2rem' }}>
+          <h2>Customize Background</h2>
+          <input type="file" accept="image/*" onChange={handleBackgroundChange} />
+          {background && (
+            <button 
+              onClick={() => {
+                setBackground(null);
+                localStorage.removeItem('pomodoro-background');
+              }}
+              style={{ marginLeft: '10px' }}
+            >
+              Clear Background
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
