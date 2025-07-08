@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import './App.css';
 
 const DEFAULTS = {
@@ -26,6 +26,25 @@ function App() {
   });
   const [pomodoroCount, setPomodoroCount] = useState(0);
 
+  const handleAutoAdvance = useCallback(() => {
+    if (mode === 'pomodoro') {
+      setPomodoroCount(prev => prev + 1);
+      // After 4 pomodoros, take a long break
+      if (pomodoroCount >= 3) {
+        setMode('longBreak');
+        setPomodoroCount(0); // Reset count
+      } else {
+        setMode('shortBreak');
+      }
+    } else if (mode === 'shortBreak' || mode === 'longBreak') {
+      setMode('pomodoro');
+    }
+    // Auto-start the next timer
+    setTimeout(() => {
+      setIsRunning(true);
+    }, 1000); // 1 second delay to show the mode change
+  }, [mode, pomodoroCount]);
+
   React.useEffect(() => {
     setSecondsLeft(durations[mode]);
   }, [mode, durations]);
@@ -48,26 +67,7 @@ function App() {
       });
     }, 1000);
     return () => clearInterval(timerRef.current!);
-  }, [isRunning]);
-
-  const handleAutoAdvance = () => {
-    if (mode === 'pomodoro') {
-      setPomodoroCount(prev => prev + 1);
-      // After 4 pomodoros, take a long break
-      if (pomodoroCount >= 3) {
-        setMode('longBreak');
-        setPomodoroCount(0); // Reset count
-      } else {
-        setMode('shortBreak');
-      }
-    } else if (mode === 'shortBreak' || mode === 'longBreak') {
-      setMode('pomodoro');
-    }
-    // Auto-start the next timer
-    setTimeout(() => {
-      setIsRunning(true);
-    }, 1000); // 1 second delay to show the mode change
-  };
+  }, [isRunning, handleAutoAdvance]);
 
   const handleStart = () => setIsRunning(true);
   const handlePause = () => setIsRunning(false);
