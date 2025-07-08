@@ -127,7 +127,7 @@
   font-size: 1rem;
   border: none;
   border-radius: 5px;
-  background: #eee;
+  background: #ccc;
   cursor: pointer;
   transition: background 0.2s;
   min-height: 44px; /* Better touch target for mobile */
