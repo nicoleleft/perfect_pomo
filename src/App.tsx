@@ -22,7 +22,10 @@ function App() {
   const [isRunning, setIsRunning] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const [background, setBackground] = useState<string | null>(() => {
-    return localStorage.getItem('pomodoro-background');
+    const saved = localStorage.getItem('pomodoro-background');
+    if (saved) return saved;
+    // Default to public/_.jpeg if no custom background
+    return process.env.PUBLIC_URL + '/_.jpeg';
   });
   const [pomodoroCount, setPomodoroCount] = useState(0);
 
