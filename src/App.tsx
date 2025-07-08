@@ -101,12 +101,22 @@ function App() {
     }
   };
 
+  // List of preset images in the public folder
+  const PRESET_IMAGES = [
+    '/_.jpeg',
+    '/preset_1.gif',
+    '/preset_2.webp',
+    '/preset_3.jpg',
+    '/preset_4.jpg',
+    '/preset_5.jpg',
+  ];
+
   return (
     <div
       className="App"
       style={background ? { backgroundImage: `url(${background})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
     >
-      <div className="app-container">
+      <div className="app-container" style={{ marginTop: 32, marginBottom: 32, padding: 24 }}>
         <h1>Pomodoro Timer</h1>
         <div className="mode-buttons">
           <button onClick={() => handleModeChange('pomodoro')} className={mode === 'pomodoro' ? 'active' : ''}>Pomodoro</button>
@@ -155,6 +165,23 @@ function App() {
         <div className="background-upload" style={{ marginTop: '2rem' }}>
           <h2>Customize Background</h2>
           <input type="file" accept="image/*" onChange={handleBackgroundChange} />
+          {/* Preset background options */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center', marginTop: '1rem', marginBottom: '10px' }}>
+            {PRESET_IMAGES.map((img, idx) => (
+              <div key={img} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <img
+                  src={process.env.PUBLIC_URL + img}
+                  alt={img}
+                  style={{ width: 64, height: 64, objectFit: 'cover', borderRadius: 8, border: background === (process.env.PUBLIC_URL + img) ? '2px solid #333' : '1px solid #ccc', cursor: 'pointer' }}
+                  onClick={() => {
+                    setBackground(process.env.PUBLIC_URL + img);
+                    localStorage.setItem('pomodoro-background', process.env.PUBLIC_URL + img);
+                  }}
+                />
+                <span style={{ fontSize: 12, marginTop: 4 }}>{`Preset ${idx + 1}`}</span>
+              </div>
+            ))}
+          </div>
           {background && (
             <button 
               onClick={() => {
