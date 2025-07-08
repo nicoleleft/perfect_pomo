@@ -1,7 +1,7 @@
 @font-face {
-  font-family: 'Qilka';
-  src: url('./fonts/Qilka-Bold copy.otf') format('opentype');
-  font-weight: bold;
+  font-family: 'Ruigslay';
+  src: url('./fonts/Ruigslay.ttf') format('truetype');
+  font-weight: normal;
   font-style: normal;
 }
 
@@ -16,16 +16,15 @@
   position: relative;
   /* background styles are set inline if image is present */
   box-sizing: border-box;
-  font-family: 'Qilka', sans-serif;
+  font-family: 'Ruigslay', sans-serif;
 }
 
 .app-container {
   max-width: 500px;
   width: 100%;
   margin: 0 auto;
-  padding: 1rem;
   box-sizing: border-box;
-  background: rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.55);
   border-radius: 10px;
 }
 
@@ -143,7 +142,7 @@
 .timer-display {
   font-size: 5rem;
   margin: 1.5rem 0;
-  font-family: 'Qilka', sans-serif;
+  font-family: 'Ruigslay', sans-serif !important;
 }
 
 .timer-controls button {
@@ -160,8 +159,8 @@
   touch-action: manipulation; /* Prevents zoom on double tap */
 }
 .timer-controls button:hover {
-  background: #61dafb;
-  color: #222;
+  background: #f5f5dc;
+  color: #333;
 }
 
 .settings {
@@ -208,7 +207,7 @@ button {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
-  font-family: 'Qilka', sans-serif;
+  font-family: 'Ruigslay', sans-serif;
 }
 
 
