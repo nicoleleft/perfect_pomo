@@ -15,6 +15,13 @@ function formatTime(seconds: number) {
   return `${m}:${s}`;
 }
 
+// Sound effect URLs for each timer (moved outside App)
+const SOUNDS = {
+  pomodoro: '/timer-terminer-342934.mp3',
+  shortBreak: '/rainbow-countdown-289372.mp3',
+  longBreak: '/microwave-timer-117077.mp3',
+};
+
 function App() {
   const [mode, setMode] = useState<Mode>('pomodoro');
   const [durations, setDurations] = useState({ ...DEFAULTS });
@@ -53,15 +60,8 @@ function App() {
     setSecondsLeft(durations[mode]);
   }, [mode, durations]);
 
-  // Sound effect URLs for each timer
-  const SOUNDS = {
-    pomodoro: '/timer-terminer-342934.mp3',
-    shortBreak: '/rainbow-countdown-289372.mp3',
-    longBreak: '/microwave-timer-117077.mp3',
-  };
-
-  // Play sound when timer is up
-  const playSound = (mode: Mode) => {
+  // Play sound when timer is up (memoized)
+  const playSound = React.useCallback((mode: Mode) => {
     let key: keyof typeof SOUNDS = 'pomodoro';
     if (mode === 'shortBreak') key = 'shortBreak';
     else if (mode === 'longBreak') key = 'longBreak';
@@ -77,7 +77,7 @@ function App() {
       audio.currentTime = 0;
     }, 3000);
     audio.onended = () => clearTimeout(stopTimeout);
-  };
+  }, []);
 
   // Timer effect: use endTime for accuracy
   React.useEffect(() => {
@@ -105,7 +105,7 @@ function App() {
       });
     }, 1000);
     return () => clearInterval(timerRef.current!);
-  }, [isRunning, handleAutoAdvance, mode]);
+  }, [isRunning, handleAutoAdvance, mode, playSound, secondsLeft]);
 
   // Reset endTime when mode or durations change, or when timer is reset/paused
   React.useEffect(() => {
