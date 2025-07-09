@@ -52,25 +52,51 @@ function App() {
     setSecondsLeft(durations[mode]);
   }, [mode, durations]);
 
+  // Sound effect URLs for each timer
+  const SOUNDS = {
+    pomodoro: process.env.PUBLIC_URL + '/timer-terminer-342934.mp3',
+    shortBreak: process.env.PUBLIC_URL + '/rainbow-countdown-289372.mp3',
+    longBreak: process.env.PUBLIC_URL + '/microwave-timer-117077.mp3',
+  };
+
+  // Play sound when timer is up
+  const playSound = (mode: Mode) => {
+    let key: keyof typeof SOUNDS = 'pomodoro';
+    if (mode === 'shortBreak') key = 'shortBreak';
+    else if (mode === 'longBreak') key = 'longBreak';
+    const audio = new window.Audio(SOUNDS[key]);
+    audio.currentTime = 0;
+    audio.play();
+    // Play only the first 3 seconds
+    const stopTimeout = setTimeout(() => {
+      audio.pause();
+      audio.currentTime = 0;
+    }, 3000);
+    audio.onended = () => clearTimeout(stopTimeout);
+  };
+
+  // Timer effect: use endTime for accuracy
   React.useEffect(() => {
     if (!isRunning) {
       if (timerRef.current) clearInterval(timerRef.current);
       return;
     }
     timerRef.current = setInterval(() => {
-      setSecondsLeft((prev) => {
-        if (prev <= 1) {
+      setSecondsLeft(() => {
+        if (!endTime) return 0;
+        const diff = Math.round((endTime - Date.now()) / 1000);
+        if (diff <= 0) {
           setIsRunning(false);
           clearInterval(timerRef.current!);
-          // Auto-advance to next mode
+          playSound(mode);
           handleAutoAdvance();
           return 0;
         }
-        return prev - 1;
+        return diff;
       });
     }, 1000);
     return () => clearInterval(timerRef.current!);
-  }, [isRunning, handleAutoAdvance]);
+  }, [isRunning, handleAutoAdvance, mode, endTime]);
 
   const handleStart = () => setIsRunning(true);
   const handlePause = () => setIsRunning(false);
