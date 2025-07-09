@@ -55,9 +55,9 @@ function App() {
 
   // Sound effect URLs for each timer
   const SOUNDS = {
-    pomodoro: process.env.PUBLIC_URL + '/timer-terminer-342934.mp3',
-    shortBreak: process.env.PUBLIC_URL + '/rainbow-countdown-289372.mp3',
-    longBreak: process.env.PUBLIC_URL + '/microwave-timer-117077.mp3',
+    pomodoro: '/timer-terminer-342934.mp3',
+    shortBreak: '/rainbow-countdown-289372.mp3',
+    longBreak: '/microwave-timer-117077.mp3',
   };
 
   // Play sound when timer is up
@@ -66,6 +66,9 @@ function App() {
     if (mode === 'shortBreak') key = 'shortBreak';
     else if (mode === 'longBreak') key = 'longBreak';
     const audio = new window.Audio(SOUNDS[key]);
+    audio.onerror = (e) => {
+      console.error('Audio error:', e, SOUNDS[key]);
+    };
     audio.currentTime = 0;
     audio.play();
     // Play only the first 3 seconds
