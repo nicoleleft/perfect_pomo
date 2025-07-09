@@ -21,6 +21,7 @@ function App() {
   const [secondsLeft, setSecondsLeft] = useState(durations.pomodoro);
   const [isRunning, setIsRunning] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const endTime = useRef<number | null>(null);
   const [background, setBackground] = useState<string | null>(() => {
     const saved = localStorage.getItem('pomodoro-background');
     if (saved) return saved;
@@ -81,28 +82,47 @@ function App() {
       if (timerRef.current) clearInterval(timerRef.current);
       return;
     }
+    // If starting, set endTime if not already set
+    if (!endTime.current) {
+      endTime.current = Date.now() + secondsLeft * 1000;
+    }
     timerRef.current = setInterval(() => {
       setSecondsLeft(() => {
-        if (!endTime) return 0;
-        const diff = Math.round((endTime - Date.now()) / 1000);
+        if (!endTime.current) return 0;
+        const diff = Math.round((endTime.current - Date.now()) / 1000);
         if (diff <= 0) {
           setIsRunning(false);
           clearInterval(timerRef.current!);
           playSound(mode);
           handleAutoAdvance();
+          endTime.current = null;
           return 0;
         }
         return diff;
       });
     }, 1000);
     return () => clearInterval(timerRef.current!);
-  }, [isRunning, handleAutoAdvance, mode, endTime]);
+  }, [isRunning, handleAutoAdvance, mode]);
 
-  const handleStart = () => setIsRunning(true);
-  const handlePause = () => setIsRunning(false);
+  // Reset endTime when mode or durations change, or when timer is reset/paused
+  React.useEffect(() => {
+    endTime.current = null;
+  }, [mode, durations]);
+
+  const handleStart = () => {
+    if (!isRunning) {
+      endTime.current = Date.now() + secondsLeft * 1000;
+      setIsRunning(true);
+    }
+  };
+  const handlePause = () => {
+    setIsRunning(false);
+    endTime.current = null;
+  };
   const handleReset = () => {
     setIsRunning(false);
     setSecondsLeft(durations[mode]);
+    endTime.current = null;
   };
 
   const handleModeChange = (newMode: Mode) => {
